@@ -1,5 +1,7 @@
 import * as bcrypt from "bcrypt";
+import { Role } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
+import { AUTH_ERRORS } from "./constants";
 import { ConfigService } from "@nestjs/config";
 import { RegisterDto } from "./dto/register.dto";
 import { PrismaService } from "src/prisma.service";
@@ -22,7 +24,7 @@ export class AuthService {
     });
 
     if (user) {
-      throw new ConflictException("Email is already in use");
+      throw new ConflictException(AUTH_ERRORS.EMAIL_ALREADY_EXISTS);
     }
 
     const hash = await bcrypt.hash(dto.password, 10);
@@ -31,13 +33,13 @@ export class AuthService {
       data: {
         ...dto,
         password: hash,
-        role: "EMPLOYEE",
+        role: Role.EMPLOYEE,
       },
     });
   }
 
-  private generateTokens(id: string) {
-    const payload: JwtPayload = { id };
+  private generateTokens(userId: string) {
+    const payload: JwtPayload = { userId };
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: this.configService.getOrThrow<string>("JWT_ACCESS_TOKEN_TTL")
