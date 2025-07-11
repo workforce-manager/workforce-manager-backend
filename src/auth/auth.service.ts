@@ -2,11 +2,12 @@ import * as bcrypt from "bcrypt";
 import { Role } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import { AUTH_ERRORS } from "./constants";
+import { LoginDto } from "./dto/login.dto";
 import { ConfigService } from "@nestjs/config";
 import { RegisterDto } from "./dto/register.dto";
 import { PrismaService } from "src/prisma.service";
 import { JwtPayload } from "./interfaces/jwt.interface";
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 
 @Injectable()
 export class AuthService {
@@ -36,6 +37,30 @@ export class AuthService {
         role: Role.EMPLOYEE,
       },
     });
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
+    }
+
+    return this.generateTokens(user.id);
   }
 
   private generateTokens(userId: string) {
