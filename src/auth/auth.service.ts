@@ -1,3 +1,8 @@
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { Role } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
@@ -7,14 +12,13 @@ import { ConfigService } from "@nestjs/config";
 import { RegisterDto } from "./dto/register.dto";
 import { PrismaService } from "src/prisma.service";
 import { JwtPayload } from "./interfaces/jwt.interface";
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   async register(dto: RegisterDto) {
@@ -30,13 +34,15 @@ export class AuthService {
 
     const hash = await bcrypt.hash(dto.password, 10);
 
-    return await this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         ...dto,
         password: hash,
         role: Role.EMPLOYEE,
       },
     });
+
+    return this.generateTokens(newUser.id);
   }
 
   async login(dto: LoginDto) {
@@ -67,11 +73,11 @@ export class AuthService {
     const payload: JwtPayload = { userId };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.getOrThrow<string>("JWT_ACCESS_TOKEN_TTL")
+      expiresIn: this.configService.getOrThrow<string>("JWT_ACCESS_TOKEN_TTL"),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.getOrThrow<string>("JWT_REFRESH_TOKEN_TTL")
+      expiresIn: this.configService.getOrThrow<string>("JWT_REFRESH_TOKEN_TTL"),
     });
 
     return { accessToken, refreshToken };
