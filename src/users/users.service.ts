@@ -8,11 +8,11 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+    return await this.prisma.user.findMany();
   }
 
   async create(dto: CreateUserDto) {
-    return this.prisma.user.create({
+    return await this.prisma.user.create({
       data: {
         ...dto,
         role: Role.EMPLOYEE,
