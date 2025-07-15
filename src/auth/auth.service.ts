@@ -65,4 +65,18 @@ export class AuthService {
 
     return this.tokensService.generateTokens(user.id);
   }
+
+  async validate(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
+    }
+
+    return user;
+  }
 }
