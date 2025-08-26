@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -15,7 +15,7 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         ...dto,
-        role: "EMPLOYEE",
+        role: Role.EMPLOYEE,
       },
     });
   }
