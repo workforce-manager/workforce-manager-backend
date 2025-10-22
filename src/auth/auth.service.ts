@@ -47,9 +47,8 @@ export class AuthService {
       where: {
         email: dto.email,
       },
-      select: {
-        id: true,
-        password: true,
+      omit: {
+        email: true,
       },
     });
 
@@ -63,7 +62,10 @@ export class AuthService {
       throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
     }
 
-    return this.tokensService.generateTokens(user.id);
+    return {
+      ...this.tokensService.generateTokens(user.id),
+      user: { id: user.id, name: user.name, role: user.role },
+    };
   }
 
   async validate(userId: string) {
