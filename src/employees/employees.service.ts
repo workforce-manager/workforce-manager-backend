@@ -1,17 +1,17 @@
-import { Role, User } from "@prisma/client";
 import { Injectable } from "@nestjs/common";
+import { Role, User } from "@prisma/client";
 import { PrismaService } from "src/prisma.service";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateEmployeeDto } from "./dto/create-employee.dto";
 
 @Injectable()
-export class UsersService {
+export class EmployeesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<User[]> {
     return await this.prisma.user.findMany();
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateEmployeeDto) {
     return await this.prisma.user.create({
       data: {
         ...dto,
