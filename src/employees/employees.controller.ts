@@ -1,18 +1,14 @@
+import { Employee } from "@prisma/client";
 import { EmployeesService } from "./employees.service";
-import { Body, Controller, Get, Post } from "@nestjs/common";
-import { CreateEmployeeDto } from "./dto/create-employee.dto";
+import { Controller, Get, HttpCode } from "@nestjs/common";
 
 @Controller("employees")
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Get()
-  async findAll() {
+  @HttpCode(200)
+  async findAll(): Promise<Employee[]> {
     return this.employeesService.findAll();
-  }
-
-  @Post()
-  async create(@Body() dto: CreateEmployeeDto) {
-    return this.employeesService.create(dto);
   }
 }
