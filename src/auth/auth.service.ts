@@ -39,17 +39,21 @@ export class AuthService {
       },
     });
 
-    return this.tokensService.generateTokens(newUser.id);
+    return {
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
+      ...this.tokensService.generateTokens(newUser.id),
+    };
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
-      },
-      select: {
-        id: true,
-        password: true,
       },
     });
 
@@ -63,7 +67,15 @@ export class AuthService {
       throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
     }
 
-    return this.tokensService.generateTokens(user.id);
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      ...this.tokensService.generateTokens(user.id),
+    };
   }
 
   async validate(userId: string) {
